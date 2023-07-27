@@ -46,7 +46,7 @@ func (s *ArticlePostgresStorage) Store(ctx context.Context, article model.Articl
 }
 
 //Возвращает все статьи, которые не были опубликованы в тг канал
-func (s *ArticlePostgresStorage) AllNotPosted(ctx context.Context, since time.Time, limit uint64) ([]model.Article, error) {
+func (s *ArticlePostgresStorage) AllNotPosted(ctx context.Context, limit uint64) ([]model.Article, error) {
 	conn, err := s.db.Connx(ctx)
 	if err != nil {
 		return nil, err
@@ -59,10 +59,10 @@ func (s *ArticlePostgresStorage) AllNotPosted(ctx context.Context, since time.Ti
 		ctx,
 		&articles,
 		`SELECT * FROM articles
-		WHERE posted_at IS NULL AND published_at >= $1::timestamp
+		WHERE posted_at IS NULL
 		ORDER BY published_at DESC
-		LIMIT $2`, //введя ::timestamp мы говорим Postgres, что тут timestamp
-		since.UTC().Format(time.RFC3339), //postgres понимает время в таком формате, из-за чего он должен все правильно распарсить
+		LIMIT $1`, //введя ::timestamp мы говорим Postgres, что тут timestamp
+		//postgres понимает время в таком формате, из-за чего он должен все правильно распарсить
 		limit,
 	); err != nil {
 		return nil, err
@@ -107,7 +107,7 @@ type dbArticle struct {
 	SourceID    int64        `db:"source_id"`
 	Title       string       `db:"title"`
 	Link        string       `db:"link"`
-	Summary     string       `db:"summury"`
+	Summary     string       `db:"summary"`
 	CreatedAt   time.Time    `db:"created_at"`
 	PostedAt    sql.NullTime `db:"posted_at"`
 	PublishedAt time.Time    `db:"published_at"`

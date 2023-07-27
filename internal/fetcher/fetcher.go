@@ -73,10 +73,14 @@ func (f *Fetcher) Fetch(ctx context.Context) error {
 		return err
 	}
 
+	log.Printf("[LOG] Getted all the sources\n")
+
 	var wg sync.WaitGroup
 
 	for _, src := range sources {
 		wg.Add(1)
+
+		log.Printf("[LOG] The %s source is being processed", src.Name)
 
 		rssSource := source.NewRSSSourceFromModel(src)
 
@@ -93,6 +97,8 @@ func (f *Fetcher) Fetch(ctx context.Context) error {
 				log.Printf("[ERROR] Processing items from source %s: %v", source.Name(), err)
 				return
 			}
+
+			log.Printf("[LOG] Recieved %d articles from the %s source", len(items), source.Name())
 		}(rssSource)
 	}
 
